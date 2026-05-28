@@ -2,8 +2,6 @@ import Link from 'next/link'
 import { Calendar } from '@/components/calendar'
 import { EventList } from '@/components/event-list'
 import { getEvents, getUpcomingEvents } from '@/app/actions/events'
-import { Settings } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 
 export default async function HomePage() {
   const [events, upcomingEvents] = await Promise.all([
@@ -14,15 +12,6 @@ export default async function HomePage() {
   return (
     <main className="min-h-screen bg-background">
       <div className="max-w-md mx-auto px-4 py-6">
-        {/* Admin link */}
-        <div className="flex justify-end mb-4">
-          <Button variant="ghost" size="icon" asChild>
-            <Link href="/admin" aria-label="Administrar eventos">
-              <Settings className="h-5 w-5" />
-            </Link>
-          </Button>
-        </div>
-
         {/* Calendar */}
         <Calendar events={events} />
 
@@ -31,6 +20,13 @@ export default async function HomePage() {
 
         {/* Upcoming Events */}
         <EventList events={upcomingEvents} />
+
+        {/* Footer */}
+        <div className="mt-10 text-center border-t border-gray-300">
+          <Link href="/admin" className="text-xs text-muted-foreground/50 hover:text-muted-foreground transition-colors">
+            Ingresá
+          </Link>
+        </div>
       </div>
     </main>
   )

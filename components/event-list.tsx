@@ -54,44 +54,61 @@ export function EventList({ events }: EventListProps) {
     )
   }
 
+  const eventsByMonth = events.reduce<{ monthKey: string; monthLabel: string; events: Event[] }[]>((groups, event) => {
+    const date = new Date(event.eventDate)
+    const monthKey = format(date, 'yyyy-MM')
+    const monthLabel = format(date, 'MMMM', { locale: es })
+    const existing = groups.find(g => g.monthKey === monthKey)
+    if (existing) {
+      existing.events.push(event)
+    } else {
+      groups.push({ monthKey, monthLabel, events: [event] })
+    }
+    return groups
+  }, [])
+
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-semibold text-foreground">Proximos eventos</h2>
-      <div className="space-y-3">
-        {events.map((event) => {
-          const eventDate = new Date(event.eventDate)
-          const { day, label } = formatEventDate(eventDate)
-          const eventTypeConfig = EVENT_TYPES[event.eventType as EventType]
+      <h2 className="text-lg font-semibold text-foreground">Próximos eventos</h2>
+      <div className="space-y-5">
+        {eventsByMonth.map(({ monthKey, monthLabel, events: monthEvents }) => (
+          <div key={monthKey}>
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+              {monthLabel}
+            </h3>
+            <div className="space-y-3">
+              {monthEvents.map((event) => {
+                const eventDate = new Date(event.eventDate)
+                const { day, label } = formatEventDate(eventDate)
+                const eventTypeConfig = EVENT_TYPES[event.eventType as EventType]
 
-          return (
-            <div key={event.id} className="flex items-start gap-4">
-              {/* Date column */}
-              <div className="flex flex-col items-center min-w-[40px]">
-                <span className="text-2xl font-bold text-foreground">{day}</span>
-                <span className="text-xs text-muted-foreground">{label}</span>
-              </div>
-
-              {/* Color bar */}
-              <div className={`w-1 self-stretch rounded-full ${eventTypeConfig?.color || 'bg-gray-400'}`} />
-
-              {/* Event details */}
-              <div className="flex-1 min-w-0">
-                <h3 className="font-medium text-foreground truncate">{event.title}</h3>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-sm text-muted-foreground">
-                    {event.allDay 
-                      ? 'Todo el dia' 
-                      : format(eventDate, 'HH:mm', { locale: es })}
-                    {event.location && ` · ${event.location}`}
-                  </span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${eventTypeConfig?.bgLight || 'bg-gray-100'} ${eventTypeConfig?.textColor || 'text-gray-700'}`}>
-                    {eventTypeConfig?.label || event.eventType}
-                  </span>
-                </div>
-              </div>
+                return (
+                  <div key={event.id} className="flex items-start gap-4">
+                    <div className="flex flex-col items-center min-w-[40px]">
+                      <span className="text-2xl font-bold text-foreground">{day}</span>
+                      <span className="text-xs text-muted-foreground">{label}</span>
+                    </div>
+                    <div className={`w-1 self-stretch rounded-full ${eventTypeConfig?.color || 'bg-gray-400'}`} />
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-medium text-foreground truncate">{event.title}</h3>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm text-muted-foreground">
+                          {event.allDay
+                            ? 'Todo el dia'
+                            : format(eventDate, 'HH:mm', { locale: es })}
+                          {event.location && ` · ${event.location}`}
+                        </span>
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${eventTypeConfig?.bgLight || 'bg-gray-100'} ${eventTypeConfig?.textColor || 'text-gray-700'}`}>
+                          {eventTypeConfig?.label || event.eventType}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
             </div>
-          )
-        })}
+          </div>
+        ))}
       </div>
     </div>
   )

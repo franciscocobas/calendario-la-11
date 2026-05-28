@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { EVENT_TYPES, type EventType } from '@/lib/event-types'
@@ -17,16 +17,9 @@ const DAYS = ['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa', 'Do']
 export function Calendar({ events }: CalendarProps) {
   const [mounted, setMounted] = useState(false)
   const [currentDate, setCurrentDate] = useState(() => new Date())
-  const [selectedFilter, setSelectedFilter] = useState<EventType | 'todos'>('todos')
-
   useEffect(() => {
     setMounted(true)
   }, [])
-
-  const filteredEvents = useMemo(() => {
-    if (selectedFilter === 'todos') return events
-    return events.filter(e => e.eventType === selectedFilter)
-  }, [events, selectedFilter])
 
   const monthStart = startOfMonth(currentDate)
   const monthEnd = endOfMonth(currentDate)
@@ -40,7 +33,7 @@ export function Calendar({ events }: CalendarProps) {
   const nextMonth = () => setCurrentDate(addMonths(currentDate, 1))
 
   const getEventsForDay = (day: Date) => {
-    return filteredEvents.filter(event => 
+    return events.filter(event =>
       isSameDay(new Date(event.eventDate), day)
     )
   }
@@ -64,46 +57,24 @@ export function Calendar({ events }: CalendarProps) {
   return (
     <div className="w-full">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <p className="text-sm text-muted-foreground">Escuela N 123</p>
-          <h1 className="text-2xl font-bold text-foreground">Calendario escolar</h1>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={previousMonth} aria-label="Mes anterior">
-            <ChevronLeft className="h-5 w-5" />
-          </Button>
-          <span className="text-lg font-medium min-w-[140px] text-center capitalize">
-            {format(currentDate, 'MMMM yyyy', { locale: es })}
-          </span>
-          <Button variant="ghost" size="icon" onClick={nextMonth} aria-label="Mes siguiente">
-            <ChevronRight className="h-5 w-5" />
-          </Button>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-foreground">Calendario inicial 4</h1>
+        <div className="flex items-center justify-between mt-1">
+          <p className="text-sm text-muted-foreground">Escuela N 11</p>
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="icon" onClick={previousMonth} aria-label="Mes anterior">
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="text-sm font-medium min-w-[110px] text-center capitalize">
+              {format(currentDate, 'MMMM yyyy', { locale: es })}
+            </span>
+            <Button variant="ghost" size="icon" onClick={nextMonth} aria-label="Mes siguiente">
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="flex gap-2 mb-6 flex-wrap">
-        <Button
-          variant={selectedFilter === 'todos' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => setSelectedFilter('todos')}
-          className={selectedFilter === 'todos' ? 'bg-emerald-600 hover:bg-emerald-700' : ''}
-        >
-          Todos
-        </Button>
-        {(Object.keys(EVENT_TYPES) as EventType[]).map((type) => (
-          <Button
-            key={type}
-            variant={selectedFilter === type ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setSelectedFilter(type)}
-            className={selectedFilter === type ? `${EVENT_TYPES[type].color} hover:opacity-90` : ''}
-          >
-            {EVENT_TYPES[type].label}
-          </Button>
-        ))}
-      </div>
 
       {/* Calendar Grid */}
       <div className="grid grid-cols-7 gap-1 mb-2">
@@ -135,9 +106,8 @@ export function Calendar({ events }: CalendarProps) {
           return (
             <div
               key={day.toISOString()}
-              className={`aspect-square flex flex-col items-center justify-center p-1 rounded-lg relative ${
-                isToday ? 'bg-emerald-100 ring-2 ring-emerald-500' : ''
-              } ${!isCurrentMonth ? 'text-muted-foreground/50' : ''}`}
+              className={`aspect-square flex flex-col items-center justify-center p-1 rounded-lg relative ${isToday ? 'bg-emerald-100 ring-2 ring-emerald-500' : ''
+                } ${!isCurrentMonth ? 'text-muted-foreground/50' : ''}`}
             >
               <span className={`text-sm ${isToday ? 'font-bold text-emerald-700' : ''}`}>
                 {day.getDate()}
