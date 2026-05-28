@@ -1,6 +1,6 @@
 # Calendario La 11
 
-Calendario de eventos escolares para la Escuela N° 123. Permite a los administradores gestionar eventos y a los padres/alumnos verlos en un calendario público.
+Calendario de eventos escolares para la Escuela N° 11. Permite a los administradores gestionar eventos y a los padres/alumnos verlos en un calendario público.
 
 ## Stack
 
