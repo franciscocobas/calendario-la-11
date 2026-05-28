@@ -25,7 +25,6 @@ export const metadata: Metadata = {
         type: 'image/svg+xml',
       },
     ],
-    apple: '/Escuela11_180x180.png',
   },
 }
 
