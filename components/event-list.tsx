@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { format, isToday, isTomorrow, parseISO } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { EVENT_TYPES, type EventType } from '@/lib/event-types'
@@ -23,6 +24,28 @@ function formatEventDate(date: Date) {
 }
 
 export function EventList({ events }: EventListProps) {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return (
+      <div className="space-y-4 animate-pulse">
+        <div className="h-6 bg-muted rounded w-40"></div>
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="flex items-start gap-4">
+              <div className="h-12 w-10 bg-muted rounded"></div>
+              <div className="flex-1 h-12 bg-muted rounded"></div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
   if (events.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">

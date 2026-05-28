@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { EVENT_TYPES, type EventType } from '@/lib/event-types'
@@ -15,8 +15,13 @@ interface CalendarProps {
 const DAYS = ['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa', 'Do']
 
 export function Calendar({ events }: CalendarProps) {
-  const [currentDate, setCurrentDate] = useState(new Date())
+  const [mounted, setMounted] = useState(false)
+  const [currentDate, setCurrentDate] = useState(() => new Date())
   const [selectedFilter, setSelectedFilter] = useState<EventType | 'todos'>('todos')
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const filteredEvents = useMemo(() => {
     if (selectedFilter === 'todos') return events
@@ -41,6 +46,20 @@ export function Calendar({ events }: CalendarProps) {
   }
 
   const today = new Date()
+
+  if (!mounted) {
+    return (
+      <div className="w-full animate-pulse">
+        <div className="h-8 bg-muted rounded mb-6 w-48"></div>
+        <div className="h-10 bg-muted rounded mb-6"></div>
+        <div className="grid grid-cols-7 gap-1">
+          {Array.from({ length: 35 }).map((_, i) => (
+            <div key={i} className="aspect-square bg-muted rounded"></div>
+          ))}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="w-full">
