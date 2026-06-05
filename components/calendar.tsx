@@ -33,9 +33,12 @@ export function Calendar({ events }: CalendarProps) {
   const nextMonth = () => setCurrentDate(addMonths(currentDate, 1))
 
   const getEventsForDay = (day: Date) => {
-    return events.filter(event =>
-      isSameDay(new Date(event.eventDate), day)
-    )
+    return events.filter(event => {
+      const start = startOfDay(new Date(event.eventDate))
+      const end = event.eventEndDate ? startOfDay(new Date(event.eventEndDate)) : start
+      const d = startOfDay(day)
+      return d >= start && d <= end
+    })
   }
 
   const today = new Date()
@@ -131,11 +134,26 @@ export function Calendar({ events }: CalendarProps) {
         {(() => {
           const endDayOfWeek = getDay(monthEnd)
           const paddingEnd = endDayOfWeek === 0 ? 0 : 7 - endDayOfWeek
-          return Array.from({ length: paddingEnd }).map((_, index) => (
-            <div key={`padding-end-${index}`} className="aspect-square flex flex-col items-center justify-center p-1">
-              <span className="text-sm text-muted-foreground/50">{index + 1}</span>
-            </div>
-          ))
+          return Array.from({ length: paddingEnd }).map((_, index) => {
+            const nextMonthDay = new Date(monthEnd)
+            nextMonthDay.setDate(nextMonthDay.getDate() + index + 1)
+            const dayEvents = getEventsForDay(nextMonthDay)
+            return (
+              <div key={`padding-end-${index}`} className="aspect-square flex flex-col items-center justify-center p-1">
+                <span className="text-sm text-muted-foreground/50">{nextMonthDay.getDate()}</span>
+                {dayEvents.length > 0 && (
+                  <div className="flex gap-0.5 mt-1">
+                    {dayEvents.slice(0, 3).map((event, idx) => (
+                      <div
+                        key={event.id || idx}
+                        className={`w-1.5 h-1.5 rounded-full ${EVENT_TYPES[event.eventType as EventType]?.color || 'bg-gray-400'}`}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )
+          })
         })()}
       </div>
     </div>

@@ -2,7 +2,7 @@
 
 import { db } from '@/lib/db'
 import { event } from '@/lib/db/schema'
-import { eq, gte, and, asc } from 'drizzle-orm'
+import { eq, gte, lte, and, asc, sql } from 'drizzle-orm'
 import { auth } from '@/lib/auth'
 import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
@@ -20,11 +20,14 @@ export async function getEvents() {
 export async function getUpcomingEvents(limit = 10) {
   const now = new Date()
   now.setHours(0, 0, 0, 0)
-  
+
   return db
     .select()
     .from(event)
-    .where(gte(event.eventDate, now))
+    .where(
+      sql`(${event.eventEndDate} IS NOT NULL AND ${event.eventEndDate} >= ${now})
+          OR (${event.eventEndDate} IS NULL AND ${event.eventDate} >= ${now})`
+    )
     .orderBy(asc(event.eventDate))
     .limit(limit)
 }
@@ -32,14 +35,15 @@ export async function getUpcomingEvents(limit = 10) {
 export async function getEventsByMonth(year: number, month: number) {
   const startDate = new Date(year, month, 1)
   const endDate = new Date(year, month + 1, 0, 23, 59, 59)
-  
+
   return db
     .select()
     .from(event)
     .where(
       and(
-        gte(event.eventDate, startDate),
-        gte(endDate, event.eventDate)
+        lte(event.eventDate, endDate),
+        sql`(${event.eventEndDate} IS NOT NULL AND ${event.eventEndDate} >= ${startDate})
+            OR (${event.eventEndDate} IS NULL AND ${event.eventDate} >= ${startDate})`
       )
     )
     .orderBy(asc(event.eventDate))
@@ -49,16 +53,18 @@ export async function createEvent(data: {
   title: string
   description?: string
   eventDate: Date
+  eventEndDate?: Date
   eventType: string
   location?: string
   allDay?: boolean
 }) {
   const userId = await getUserId()
-  
+
   const [newEvent] = await db.insert(event).values({
     title: data.title,
     description: data.description,
     eventDate: data.eventDate,
+    eventEndDate: data.eventEndDate ?? null,
     eventType: data.eventType,
     location: data.location,
     allDay: data.allDay ?? false,
@@ -75,6 +81,7 @@ export async function updateEvent(id: number, data: {
   title?: string
   description?: string
   eventDate?: Date
+  eventEndDate?: Date | null
   eventType?: string
   location?: string
   allDay?: boolean

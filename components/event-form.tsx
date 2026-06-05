@@ -25,18 +25,34 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
 
   const [title, setTitle] = useState(event?.title || '')
   const [description, setDescription] = useState(event?.description || '')
+  const [allDay, setAllDay] = useState(event?.allDay || false)
   const [eventDate, setEventDate] = useState(
-    event?.eventDate 
-      ? format(new Date(event.eventDate), "yyyy-MM-dd'T'HH:mm")
+    event?.eventDate
+      ? format(new Date(event.eventDate), event?.allDay ? 'yyyy-MM-dd' : "yyyy-MM-dd'T'HH:mm")
+      : ''
+  )
+  const [eventEndDate, setEventEndDate] = useState(
+    event?.eventEndDate
+      ? format(new Date(event.eventEndDate), event?.allDay ? 'yyyy-MM-dd' : "yyyy-MM-dd'T'HH:mm")
       : ''
   )
   const [eventType, setEventType] = useState<EventType>(
     (event?.eventType as EventType) || 'academico'
   )
   const [location, setLocation] = useState(event?.location || '')
-  const [allDay, setAllDay] = useState(event?.allDay || false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const handleAllDayChange = (checked: boolean) => {
+    setAllDay(checked)
+    if (checked) {
+      setEventDate(d => d ? d.slice(0, 10) : '')
+      setEventEndDate(d => d ? d.slice(0, 10) : '')
+    } else {
+      setEventDate(d => d ? `${d}T00:00` : '')
+      setEventEndDate(d => d ? `${d}T00:00` : '')
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -44,10 +60,17 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
     setLoading(true)
 
     try {
+      // For all-day events the input is "yyyy-MM-dd" which `new Date()` parses
+      // as UTC midnight, shifting the day back in negative-offset timezones.
+      // Appending a time forces local-time parsing so the calendar day is kept.
+      const parseDate = (value: string) =>
+        new Date(value.length === 10 ? `${value}T00:00` : value)
+
       const data = {
         title,
         description: description || undefined,
-        eventDate: new Date(eventDate),
+        eventDate: parseDate(eventDate),
+        eventEndDate: eventEndDate ? parseDate(eventEndDate) : undefined,
         eventType,
         location: location || undefined,
         allDay,
@@ -67,6 +90,7 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
         setTitle('')
         setDescription('')
         setEventDate('')
+        setEventEndDate('')
         setEventType('academico')
         setLocation('')
         setAllDay(false)
@@ -96,14 +120,34 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
           />
         </div>
 
+        <div className="flex items-center gap-3">
+          <Switch
+            id="allDay"
+            checked={allDay}
+            onCheckedChange={handleAllDayChange}
+          />
+          <Label htmlFor="allDay" className="cursor-pointer">Todo el dia</Label>
+        </div>
+
         <div className="flex flex-col gap-2">
-          <Label htmlFor="eventDate">Fecha y Hora *</Label>
+          <Label htmlFor="eventDate">Fecha de inicio *</Label>
           <Input
             id="eventDate"
-            type="datetime-local"
+            type={allDay ? 'date' : 'datetime-local'}
             value={eventDate}
             onChange={(e) => setEventDate(e.target.value)}
             required
+          />
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="eventEndDate">Fecha de fin <span className="text-muted-foreground font-normal">(opcional)</span></Label>
+          <Input
+            id="eventEndDate"
+            type={allDay ? 'date' : 'datetime-local'}
+            value={eventEndDate}
+            onChange={(e) => setEventEndDate(e.target.value)}
+            min={eventDate}
           />
         </div>
 
@@ -142,15 +186,6 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
             placeholder="Detalles adicionales del evento..."
             rows={3}
           />
-        </div>
-
-        <div className="flex items-center gap-3">
-          <Switch
-            id="allDay"
-            checked={allDay}
-            onCheckedChange={setAllDay}
-          />
-          <Label htmlFor="allDay" className="cursor-pointer">Todo el dia</Label>
         </div>
 
         {error && (

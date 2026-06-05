@@ -95,7 +95,11 @@ export function EventList({ events }: EventListProps) {
                 return (
                   <div key={event.id} className="flex items-start gap-4">
                     <div className="flex flex-col items-center min-w-[40px]">
-                      <span className="text-2xl font-bold text-foreground">{day}</span>
+                      <span className="text-2xl font-bold text-foreground">
+                        {event.eventEndDate
+                          ? `${day}–${format(new Date(event.eventEndDate), 'd')}`
+                          : day}
+                      </span>
                       <span className="text-xs text-muted-foreground">{label}</span>
                     </div>
                     <div className={`w-1 self-stretch rounded-full ${eventTypeConfig?.color || 'bg-gray-400'}`} />
