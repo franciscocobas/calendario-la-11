@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { EVENT_TYPES, type EventType } from '@/lib/event-types'
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, getDay } from 'date-fns'
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, getDay, isBefore, startOfDay } from 'date-fns'
 import { es } from 'date-fns/locale'
 import type { Event } from '@/lib/db/schema'
 
@@ -102,6 +102,7 @@ export function Calendar({ events }: CalendarProps) {
           const dayEvents = getEventsForDay(day)
           const isToday = isSameDay(day, today)
           const isCurrentMonth = isSameMonth(day, currentDate)
+          const isPast = isBefore(startOfDay(day), startOfDay(today))
 
           return (
             <div
@@ -109,7 +110,7 @@ export function Calendar({ events }: CalendarProps) {
               className={`aspect-square flex flex-col items-center justify-center p-1 rounded-lg relative ${isToday ? 'bg-emerald-100 ring-2 ring-emerald-500' : ''
                 } ${!isCurrentMonth ? 'text-muted-foreground/50' : ''}`}
             >
-              <span className={`text-sm ${isToday ? 'font-bold text-emerald-700' : ''}`}>
+              <span className={`text-sm ${isToday ? 'font-bold text-emerald-700' : isPast ? 'text-gray-300' : ''}`}>
                 {day.getDate()}
               </span>
               {dayEvents.length > 0 && (
@@ -117,7 +118,7 @@ export function Calendar({ events }: CalendarProps) {
                   {dayEvents.slice(0, 3).map((event, idx) => (
                     <div
                       key={event.id || idx}
-                      className={`w-1.5 h-1.5 rounded-full ${EVENT_TYPES[event.eventType as EventType]?.color || 'bg-gray-400'}`}
+                      className={`w-1.5 h-1.5 rounded-full ${isPast ? 'opacity-40' : ''} ${EVENT_TYPES[event.eventType as EventType]?.color || 'bg-gray-400'}`}
                     />
                   ))}
                 </div>

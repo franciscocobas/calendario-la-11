@@ -11,14 +11,14 @@ export const EVENT_TYPES = {
     textColor: 'text-amber-700',
     bgLight: 'bg-amber-100',
   },
-  social: {
-    label: 'Social',
+  paseos: {
+    label: 'Paseos',
     color: 'bg-green-500',
     textColor: 'text-green-700',
     bgLight: 'bg-green-100',
   },
-  deporte: {
-    label: 'Deporte',
+  sinClase: {
+    label: 'Sin Clase',
     color: 'bg-red-500',
     textColor: 'text-red-700',
     bgLight: 'bg-red-100',

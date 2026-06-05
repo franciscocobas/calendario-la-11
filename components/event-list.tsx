@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { format, isToday, isTomorrow, parseISO } from 'date-fns'
 import { es } from 'date-fns/locale'
+import { Eye, EyeOff } from 'lucide-react'
 import { EVENT_TYPES, type EventType } from '@/lib/event-types'
 import type { Event } from '@/lib/db/schema'
 
@@ -25,6 +26,15 @@ function formatEventDate(date: Date) {
 
 export function EventList({ events }: EventListProps) {
   const [mounted, setMounted] = useState(false)
+  const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set())
+
+  const toggleDescription = (id: number) => {
+    setExpandedIds(prev => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+  }
 
   useEffect(() => {
     setMounted(true)
@@ -90,7 +100,21 @@ export function EventList({ events }: EventListProps) {
                     </div>
                     <div className={`w-1 self-stretch rounded-full ${eventTypeConfig?.color || 'bg-gray-400'}`} />
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-medium text-foreground truncate">{event.title}</h3>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-medium text-foreground truncate">{event.title}</h3>
+                        {event.description && (
+                          <button
+                            onClick={() => toggleDescription(event.id)}
+                            className="text-muted-foreground hover:text-foreground transition-colors shrink-0"
+                            aria-label={expandedIds.has(event.id) ? 'Ocultar descripción' : 'Ver descripción'}
+                          >
+                            {expandedIds.has(event.id)
+                              ? <EyeOff className="h-4 w-4" />
+                              : <Eye className="h-4 w-4" />
+                            }
+                          </button>
+                        )}
+                      </div>
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-sm text-muted-foreground">
                           {event.allDay
@@ -102,6 +126,9 @@ export function EventList({ events }: EventListProps) {
                           {eventTypeConfig?.label || event.eventType}
                         </span>
                       </div>
+                      {event.description && expandedIds.has(event.id) && (
+                        <p className="mt-2 text-sm text-muted-foreground">{event.description}</p>
+                      )}
                     </div>
                   </div>
                 )
