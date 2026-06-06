@@ -28,7 +28,10 @@ function buildCalendar(events: Event[], host: string): string {
     'PRODID:-//Calendario La 11//ES',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
+    // NAME (RFC 7986) y X-WR-CALNAME (legado): distintos clientes leen una u otra.
+    'NAME:Calendario La 11',
     'X-WR-CALNAME:Calendario La 11',
+    'X-WR-CALDESC:Eventos de la Escuela N° 11',
     'X-WR-TIMEZONE:' + TIME_ZONE,
   ]
 
