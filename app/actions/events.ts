@@ -70,10 +70,11 @@ export async function createEvent(data: {
     allDay: data.allDay ?? false,
     createdBy: userId,
   }).returning()
-  
+
   revalidatePath('/')
   revalidatePath('/admin')
-  
+  revalidatePath('/calendar.ics')
+
   return newEvent
 }
 
@@ -96,10 +97,11 @@ export async function updateEvent(id: number, data: {
     })
     .where(eq(event.id, id))
     .returning()
-  
+
   revalidatePath('/')
   revalidatePath('/admin')
-  
+  revalidatePath('/calendar.ics')
+
   return updated
 }
 
@@ -107,7 +109,8 @@ export async function deleteEvent(id: number) {
   await getUserId() // Ensure user is authenticated
   
   await db.delete(event).where(eq(event.id, id))
-  
+
   revalidatePath('/')
   revalidatePath('/admin')
+  revalidatePath('/calendar.ics')
 }
