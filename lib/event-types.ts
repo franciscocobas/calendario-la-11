@@ -23,6 +23,12 @@ export const EVENT_TYPES = {
     textColor: 'text-red-700',
     bgLight: 'bg-red-100',
   },
+  ventaMerienda: {
+    label: 'Venta de Merienda',
+    color: 'bg-orange-500',
+    textColor: 'text-orange-700',
+    bgLight: 'bg-orange-100',
+  },
 } as const
 
 export type EventType = keyof typeof EVENT_TYPES
