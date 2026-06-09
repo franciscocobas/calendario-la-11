@@ -1,33 +1,57 @@
-# calendario-la-11
+# Calendario La 11
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [v0](https://v0.app).
+Calendario de eventos escolares para la Escuela N° 11. Permite a los administradores gestionar eventos y a los padres/alumnos verlos en un calendario público.
 
-## Built with v0
+## Stack
 
-This repository is linked to a [v0](https://v0.app) project. You can continue developing by visiting the link below -- start new chats to make changes, and v0 will push commits directly to this repo. Every merge to `main` will automatically deploy.
+- **Next.js** con App Router y React 19
+- **TypeScript** (strict mode)
+- **Tailwind CSS v4**
+- **Drizzle ORM** + **PostgreSQL** (Neon serverless)
+- **Better Auth** para autenticación email/password
+- **shadcn/ui** (estilo "new-york", colores neutral)
+- **date-fns** con locale español
 
-[Continue working on v0 →](https://v0.app/chat/projects/prj_86WfOOXmSJTBoDNkZ4fvgtlICOnl)
-
-## Getting Started
-
-First, run the development server:
+## Comenzar
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
+pnpm install
+pnpm dev      # servidor dev en localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Variables de entorno
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Crear un archivo `.env.local` con:
 
-## Learn More
+```
+DATABASE_URL=          # PostgreSQL connection string (Neon)
+BETTER_AUTH_URL=       # URL base para autenticación
+BETTER_AUTH_SECRET=    # Secret para Better Auth
+```
 
-To learn more, take a look at the following resources:
+## Comandos
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-- [v0 Documentation](https://v0.app/docs) - learn about v0 and how to use it.
+```bash
+pnpm dev      # servidor de desarrollo
+pnpm build    # build de producción
+pnpm start    # servidor de producción
+pnpm lint     # ESLint
+```
+
+## Rutas
+
+| Ruta | Acceso | Descripción |
+|------|--------|-------------|
+| `/` | Público | Calendario con lista de próximos eventos |
+| `/login` | Público | Login de administradores |
+| `/admin` | Protegido | CRUD de eventos |
+
+## Tipos de evento
+
+| Tipo | Color |
+|------|-------|
+| Académico | Azul |
+| Reunión | Ámbar |
+| Social | Verde |
+| Deporte | Rojo |
+| Venta de Merienda | Naranja |
