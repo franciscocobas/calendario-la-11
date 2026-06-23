@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { auth } from '@/lib/auth'
 import { headers } from 'next/headers'
-import { getEvents } from '@/app/actions/events'
+import { getUpcomingEvents } from '@/app/actions/events'
 import { EventForm } from '@/components/event-form'
 import { AdminEventList } from '@/components/admin-event-list'
 import { LogoutButton } from '@/components/logout-button'
@@ -16,7 +16,7 @@ export default async function AdminPage() {
     redirect('/login')
   }
 
-  const events = await getEvents()
+  const events = await getUpcomingEvents(1000)
 
   return (
     <main className="min-h-screen bg-background">
