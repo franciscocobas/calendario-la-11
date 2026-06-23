@@ -4,6 +4,8 @@ import { EventList } from '@/components/event-list'
 import { SubscribeButton } from '@/components/subscribe-button'
 import { getEvents, getUpcomingEvents } from '@/app/actions/events'
 
+export const dynamic = 'force-dynamic'
+
 export default async function HomePage() {
   const [events, upcomingEvents] = await Promise.all([
     getEvents(),
