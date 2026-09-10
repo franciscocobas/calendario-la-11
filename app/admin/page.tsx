@@ -3,8 +3,10 @@ import Link from 'next/link'
 import { auth } from '@/lib/auth'
 import { headers } from 'next/headers'
 import { getUpcomingEvents } from '@/app/actions/events'
+import { getEventTypes } from '@/app/actions/event-types'
 import { EventForm } from '@/components/event-form'
 import { AdminEventList } from '@/components/admin-event-list'
+import { EventTypeManager } from '@/components/event-type-manager'
 import { LogoutButton } from '@/components/logout-button'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
@@ -16,7 +18,10 @@ export default async function AdminPage() {
     redirect('/login')
   }
 
-  const events = await getUpcomingEvents(1000)
+  const [events, eventTypes] = await Promise.all([
+    getUpcomingEvents(1000),
+    getEventTypes(),
+  ])
 
   return (
     <main className="min-h-screen bg-background">
@@ -40,15 +45,16 @@ export default async function AdminPage() {
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">
-          {/* Event Form */}
-          <div>
-            <EventForm />
+          {/* Event Form + Type Manager */}
+          <div className="flex flex-col gap-6">
+            <EventForm eventTypes={eventTypes} />
+            <EventTypeManager eventTypes={eventTypes} />
           </div>
 
           {/* Event List */}
           <div>
             <h2 className="text-lg font-semibold mb-4">Eventos Existentes</h2>
-            <AdminEventList events={events} />
+            <AdminEventList events={events} eventTypes={eventTypes} />
           </div>
         </div>
       </div>

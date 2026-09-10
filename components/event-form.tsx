@@ -10,18 +10,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch'
 import { Card } from '@/components/ui/card'
 import { createEvent, updateEvent } from '@/app/actions/events'
-import { EVENT_TYPES, type EventType } from '@/lib/event-types'
+import { type EventTypeInfo } from '@/lib/event-types'
 import { format } from 'date-fns'
 import type { Event } from '@/lib/db/schema'
 
 interface EventFormProps {
   event?: Event
+  eventTypes: EventTypeInfo[]
   onSuccess?: () => void
 }
 
-export function EventForm({ event, onSuccess }: EventFormProps) {
+export function EventForm({ event, eventTypes, onSuccess }: EventFormProps) {
   const router = useRouter()
   const isEditing = !!event
+  const defaultType = eventTypes[0]?.key ?? ''
 
   const [title, setTitle] = useState(event?.title || '')
   const [description, setDescription] = useState(event?.description || '')
@@ -36,8 +38,8 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
       ? format(new Date(event.eventEndDate), event?.allDay ? 'yyyy-MM-dd' : "yyyy-MM-dd'T'HH:mm")
       : ''
   )
-  const [eventType, setEventType] = useState<EventType>(
-    (event?.eventType as EventType) || 'academico'
+  const [eventType, setEventType] = useState<string>(
+    event?.eventType || defaultType
   )
   const [location, setLocation] = useState(event?.location || '')
   const [loading, setLoading] = useState(false)
@@ -91,7 +93,7 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
         setDescription('')
         setEventDate('')
         setEventEndDate('')
-        setEventType('academico')
+        setEventType(defaultType)
         setLocation('')
         setAllDay(false)
       }
@@ -153,14 +155,14 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
 
         <div className="flex flex-col gap-2">
           <Label htmlFor="eventType">Tipo *</Label>
-          <Select value={eventType} onValueChange={(v) => setEventType(v as EventType)}>
+          <Select value={eventType} onValueChange={setEventType}>
             <SelectTrigger>
               <SelectValue placeholder="Seleccionar tipo" />
             </SelectTrigger>
             <SelectContent>
-              {(Object.keys(EVENT_TYPES) as EventType[]).map((type) => (
-                <SelectItem key={type} value={type}>
-                  {EVENT_TYPES[type].label}
+              {eventTypes.map((type) => (
+                <SelectItem key={type.key} value={type.key}>
+                  {type.label}
                 </SelectItem>
               ))}
             </SelectContent>

@@ -52,6 +52,15 @@ export const verification = pgTable('verification', {
 })
 
 // --- App tables: Events ----------------------------------------------------
+export const eventType = pgTable('event_type', {
+  key: text('key').primaryKey(),
+  label: text('label').notNull(),
+  color: text('color').notNull().default('slate'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+})
+
+export type EventTypeRow = typeof eventType.$inferSelect
+
 export const event = pgTable('event', {
   id: serial('id').primaryKey(),
   title: text('title').notNull(),

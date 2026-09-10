@@ -3,13 +3,15 @@ import { Calendar } from '@/components/calendar'
 import { EventList } from '@/components/event-list'
 import { SubscribeButton } from '@/components/subscribe-button'
 import { getEvents, getUpcomingEvents } from '@/app/actions/events'
+import { getEventTypes } from '@/app/actions/event-types'
 
 export const dynamic = 'force-dynamic'
 
 export default async function HomePage() {
-  const [events, upcomingEvents] = await Promise.all([
+  const [events, upcomingEvents, eventTypes] = await Promise.all([
     getEvents(),
-    getUpcomingEvents(5)
+    getUpcomingEvents(5),
+    getEventTypes()
   ])
 
   return (
@@ -21,13 +23,13 @@ export default async function HomePage() {
         </div>
 
         {/* Calendar */}
-        <Calendar events={events} />
+        <Calendar events={events} eventTypes={eventTypes} />
 
         {/* Divider */}
         <hr className="my-6 border-border" />
 
         {/* Upcoming Events */}
-        <EventList events={upcomingEvents} />
+        <EventList events={upcomingEvents} eventTypes={eventTypes} />
 
         {/* Footer */}
         <div className="mt-10 text-center border-t border-gray-300">

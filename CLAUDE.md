@@ -39,19 +39,21 @@ app/
   login/page.tsx            # Login de administradores
   api/auth/[...all]/        # Endpoints de Better Auth
   actions/events.ts         # Server actions CRUD de eventos
+  actions/event-types.ts    # Server actions CRUD de tipos de evento
 components/
   calendar.tsx              # Widget de calendario interactivo
   event-list.tsx            # Lista de eventos (público)
   admin-event-list.tsx      # Gestión de eventos (admin)
   event-form.tsx            # Formulario crear/editar evento
+  event-type-manager.tsx    # Gestión de tipos de evento (admin)
   login-form.tsx            # Formulario de login
   ui/                       # Componentes shadcn/ui
 lib/
-  db/schema.ts              # Schema Drizzle (tablas: event, user, session, account, verification)
+  db/schema.ts              # Schema Drizzle (tablas: event, event_type, user, session, account, verification)
   db/index.ts               # Conexión a la base de datos
   auth.ts                   # Configuración Better Auth (servidor)
   auth-client.ts            # Hooks Better Auth (cliente)
-  event-types.ts            # Tipos de evento con colores
+  event-types.ts            # Paleta de colores fija + helpers + tipos por defecto (fallback)
   utils.ts                  # Utilidades (cn)
 hooks/
   use-mobile.ts
@@ -62,10 +64,16 @@ hooks/
 
 **Tabla `event`:**
 - `id`, `title`, `description`, `location`
-- `eventDate` (timestamp with timezone)
-- `eventType`: `academico` | `reunion` | `social` | `deporte`
+- `eventDate`, `eventEndDate` (timestamp with timezone)
+- `eventType` (texto libre; referencia lógica a `event_type.key`)
 - `allDay` (boolean)
 - `createdBy` (FK a user), `createdAt`, `updatedAt`
+
+**Tabla `event_type`:**
+- `key` (PK, slug), `label`, `color` (clave de `EVENT_COLORS` en `lib/event-types.ts`), `createdAt`
+- Los admins crean/eliminan tipos desde `/admin`. Un tipo no se puede eliminar si hay eventos usándolo.
+- Se siembra con `DEFAULT_EVENT_TYPES` la primera vez que se lee y la tabla está vacía. Si la tabla no existe todavía, `getEventTypes()` cae a los defaults.
+- Requiere `pnpm db:push` para crear la tabla.
 
 ## Rutas
 
@@ -73,7 +81,7 @@ hooks/
 |------|--------|-------------|
 | `/` | Público | Calendario con lista de próximos eventos |
 | `/login` | Público | Login de admins (redirige a /admin si ya está autenticado) |
-| `/admin` | Protegido | CRUD de eventos |
+| `/admin` | Protegido | CRUD de eventos y de tipos de evento |
 | `/api/auth/[...all]` | API | Endpoints de Better Auth |
 
 ## Server Actions (`app/actions/events.ts`)
@@ -85,16 +93,26 @@ hooks/
 - `updateEvent(id, data)` — editar evento (requiere auth)
 - `deleteEvent(id)` — eliminar evento (requiere auth)
 
+## Server Actions (`app/actions/event-types.ts`)
+
+- `getEventTypes()` — tipos de evento (siembra defaults si está vacío, fallback si no hay tabla)
+- `createEventType({ label, color })` — crear tipo, genera `key` único (requiere auth)
+- `deleteEventType(key)` — eliminar tipo; falla si hay eventos usándolo (requiere auth)
+
 Todas las mutaciones llaman `revalidatePath('/')` y `revalidatePath('/admin')`.
 
 ## Tipos de evento y colores
 
-| Tipo | Color |
-|------|-------|
-| `academico` | Azul (`bg-blue-500`) |
-| `reunion` | Ámbar (`bg-amber-500`) |
-| `social` | Verde (`bg-green-500`) |
-| `deporte` | Rojo (`bg-red-500`) |
+- Los tipos de evento son **dinámicos** (tabla `event_type`), gestionados desde `/admin`.
+- Cada tipo tiene un `color` que es una clave de `EVENT_COLORS` en `lib/event-types.ts`.
+- `EVENT_COLORS` es una paleta **fija** (~17 colores) con todas las clases de Tailwind
+  escritas literalmente — Tailwind no soporta clases dinámicas, por eso no se pueden
+  usar colores arbitrarios/hex sin cambiar el enfoque.
+- Los consumidores (`calendar`, `event-list`, `admin-event-list`, `event-form`) reciben
+  los tipos como prop desde las páginas server y resuelven color/label con
+  `buildEventTypeMap()` + `eventColor()`.
+- Tipos por defecto (seed / fallback): `academico` (azul), `reunion` (ámbar),
+  `paseos` (verde), `sinClase` (rojo), `ventaMerienda` (naranja).
 
 ## Decisiones de arquitectura
 

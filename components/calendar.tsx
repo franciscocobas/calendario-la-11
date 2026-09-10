@@ -3,18 +3,20 @@
 import { useState, useEffect } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { EVENT_TYPES, type EventType } from '@/lib/event-types'
+import { buildEventTypeMap, eventColor, type EventTypeInfo } from '@/lib/event-types'
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, getDay, isBefore, startOfDay } from 'date-fns'
 import { es } from 'date-fns/locale'
 import type { Event } from '@/lib/db/schema'
 
 interface CalendarProps {
   events: Event[]
+  eventTypes: EventTypeInfo[]
 }
 
 const DAYS = ['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa', 'Do']
 
-export function Calendar({ events }: CalendarProps) {
+export function Calendar({ events, eventTypes }: CalendarProps) {
+  const typeMap = buildEventTypeMap(eventTypes)
   const [mounted, setMounted] = useState(false)
   const [currentDate, setCurrentDate] = useState(() => new Date())
   useEffect(() => {
@@ -121,7 +123,7 @@ export function Calendar({ events }: CalendarProps) {
                   {dayEvents.slice(0, 3).map((event, idx) => (
                     <div
                       key={event.id || idx}
-                      className={`w-1.5 h-1.5 rounded-full ${isPast ? 'opacity-40' : ''} ${EVENT_TYPES[event.eventType as EventType]?.color || 'bg-gray-400'}`}
+                      className={`w-1.5 h-1.5 rounded-full ${isPast ? 'opacity-40' : ''} ${eventColor(typeMap[event.eventType]?.color).dot}`}
                     />
                   ))}
                 </div>
@@ -146,7 +148,7 @@ export function Calendar({ events }: CalendarProps) {
                     {dayEvents.slice(0, 3).map((event, idx) => (
                       <div
                         key={event.id || idx}
-                        className={`w-1.5 h-1.5 rounded-full ${EVENT_TYPES[event.eventType as EventType]?.color || 'bg-gray-400'}`}
+                        className={`w-1.5 h-1.5 rounded-full ${eventColor(typeMap[event.eventType]?.color).dot}`}
                       />
                     ))}
                   </div>

@@ -4,11 +4,12 @@ import { useState, useEffect } from 'react'
 import { format, isToday, isTomorrow, parseISO } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { Eye, EyeOff } from 'lucide-react'
-import { EVENT_TYPES, type EventType } from '@/lib/event-types'
+import { buildEventTypeMap, eventColor, type EventTypeInfo } from '@/lib/event-types'
 import type { Event } from '@/lib/db/schema'
 
 interface EventListProps {
   events: Event[]
+  eventTypes: EventTypeInfo[]
 }
 
 function formatEventDate(date: Date) {
@@ -24,7 +25,8 @@ function formatEventDate(date: Date) {
   }
 }
 
-export function EventList({ events }: EventListProps) {
+export function EventList({ events, eventTypes }: EventListProps) {
+  const typeMap = buildEventTypeMap(eventTypes)
   const [mounted, setMounted] = useState(false)
   const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set())
 
@@ -90,7 +92,8 @@ export function EventList({ events }: EventListProps) {
               {monthEvents.map((event) => {
                 const eventDate = new Date(event.eventDate)
                 const { day, label } = formatEventDate(eventDate)
-                const eventTypeConfig = EVENT_TYPES[event.eventType as EventType]
+                const typeInfo = typeMap[event.eventType]
+                const colors = eventColor(typeInfo?.color)
 
                 return (
                   <div key={event.id} className="flex items-start gap-4">
@@ -102,7 +105,7 @@ export function EventList({ events }: EventListProps) {
                       </span>
                       <span className="text-xs text-muted-foreground">{label}</span>
                     </div>
-                    <div className={`w-1 self-stretch rounded-full ${eventTypeConfig?.color || 'bg-gray-400'}`} />
+                    <div className={`w-1 self-stretch rounded-full ${colors.dot}`} />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <h3 className="font-medium text-foreground truncate">{event.title}</h3>
@@ -126,8 +129,8 @@ export function EventList({ events }: EventListProps) {
                             : format(eventDate, 'HH:mm', { locale: es })}
                           {event.location && ` · ${event.location}`}
                         </span>
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${eventTypeConfig?.bgLight || 'bg-gray-100'} ${eventTypeConfig?.textColor || 'text-gray-700'}`}>
-                          {eventTypeConfig?.label || event.eventType}
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${colors.bgLight} ${colors.text}`}>
+                          {typeInfo?.label || event.eventType}
                         </span>
                       </div>
                       {event.description && expandedIds.has(event.id) && (

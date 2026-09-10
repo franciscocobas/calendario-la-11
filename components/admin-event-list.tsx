@@ -25,16 +25,18 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { deleteEvent } from '@/app/actions/events'
-import { EVENT_TYPES, type EventType } from '@/lib/event-types'
+import { buildEventTypeMap, eventColor, type EventTypeInfo } from '@/lib/event-types'
 import { EventForm } from './event-form'
 import type { Event } from '@/lib/db/schema'
 
 interface AdminEventListProps {
   events: Event[]
+  eventTypes: EventTypeInfo[]
 }
 
-export function AdminEventList({ events }: AdminEventListProps) {
+export function AdminEventList({ events, eventTypes }: AdminEventListProps) {
   const router = useRouter()
+  const typeMap = buildEventTypeMap(eventTypes)
   const [editingEvent, setEditingEvent] = useState<Event | null>(null)
   const [deletingId, setDeletingId] = useState<number | null>(null)
 
@@ -58,7 +60,8 @@ export function AdminEventList({ events }: AdminEventListProps) {
       <div className="space-y-3">
         {events.map((event) => {
           const eventDate = new Date(event.eventDate)
-          const eventTypeConfig = EVENT_TYPES[event.eventType as EventType]
+          const typeInfo = typeMap[event.eventType]
+          const colors = eventColor(typeInfo?.color)
 
           return (
             <Card key={event.id} className="p-4">
@@ -66,8 +69,8 @@ export function AdminEventList({ events }: AdminEventListProps) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="font-medium text-foreground">{event.title}</h3>
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${eventTypeConfig?.bgLight || 'bg-gray-100'} ${eventTypeConfig?.textColor || 'text-gray-700'}`}>
-                      {eventTypeConfig?.label || event.eventType}
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${colors.bgLight} ${colors.text}`}>
+                      {typeInfo?.label || event.eventType}
                     </span>
                   </div>
                   <p className="text-sm text-muted-foreground mt-1">
@@ -131,9 +134,10 @@ export function AdminEventList({ events }: AdminEventListProps) {
             <DialogTitle>Editar Evento</DialogTitle>
           </DialogHeader>
           {editingEvent && (
-            <EventForm 
-              event={editingEvent} 
-              onSuccess={() => setEditingEvent(null)} 
+            <EventForm
+              event={editingEvent}
+              eventTypes={eventTypes}
+              onSuccess={() => setEditingEvent(null)}
             />
           )}
         </DialogContent>
